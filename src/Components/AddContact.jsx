@@ -120,7 +120,7 @@ const AddContact = ({
 
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
                             <Button variant="contained" color="primary" type="submit" onClick={onAddContact} fullWidth>
-                                {isEditMode ? "Update Contact" : "Add Contact"}
+                                {isEditMode ? "Save" : "Add Contact"}
                             </Button>
 
                             {isEditMode && (

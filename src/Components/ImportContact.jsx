@@ -41,7 +41,7 @@ const ImportContact = ({ open, onClose, onImport }) => {
 
                                 if (onImport) onImport(rows);
 
-                                onClose();
+                                // onClose();
                             }}
                         >
                             {({ getRootProps, acceptedFile, getRemoveFileProps }) => (

@@ -74,7 +74,6 @@ function Login() {
             setErrors({
                 email: "Email is not registered"
             });
-            navigate("/");
             return;
         }
 
@@ -85,7 +84,7 @@ function Login() {
             return;
         }
 
-        localStorage.setItem("currentUser", JSON.stringify(emailUser));
+        localStorage.setItem("currentUser", JSON.stringify({User_id:emailUser.User_id}));
 
         setNotification({
             open: true,
@@ -94,10 +93,8 @@ function Login() {
         });
 
         setTimeout(() => {
-            navigate("/dashboard", {
-                state: { message: "Welcome back! Login successful." },
-            });
-        }, 450);
+            navigate("/dashboard");
+        }, 700);
     };
 
     return (
@@ -136,7 +133,7 @@ function Login() {
                             component="button"
                             variant="body2"
                             type="button"
-                            onClick={() => navigate("/")}
+                            onClick={() => navigate("/signup")}
                             sx={{ cursor: "pointer", fontWeight: 600 }}
                         >
                             Create account
@@ -147,7 +144,7 @@ function Login() {
 
             <Snackbar
                 open={notification.open}
-                autoHideDuration={2300}
+                autoHideDuration={700}
                 onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >

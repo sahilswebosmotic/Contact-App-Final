@@ -12,7 +12,6 @@ import ContactsDashboardOpt  from "../utils/useContactsDashboard";
 function Dashboard() {
 
     const {
-        userName,
         openForm,
         userData,
         importOpen,
@@ -29,7 +28,7 @@ function Dashboard() {
         handleOpenImport,
         handleCloseImport,
         handleImportContacts,
-        handleAddContactClick,
+        handleAddContact,
         handleChange,
         handleFileChange,
         handleRemoveImage,
@@ -50,13 +49,12 @@ function Dashboard() {
 
 
             <DashboardOverview
-                userName={userName}
                 totalContacts={userData.length}
                 onOpenForm={handleOpenForm}
             />
 
             <AddContact
-                onAddContact={handleAddContactClick}
+                onAddContact={handleAddContact}
                 formData={formData}
                 openForm={openForm}
                 handleCloseForm={handleCloseForm}

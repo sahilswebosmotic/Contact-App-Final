@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+//   DEFAULT FORM  
 
 const DEFAULT_FORM = {
     name: "",
@@ -9,110 +10,105 @@ const DEFAULT_FORM = {
     profilImage: "",
 };
 
-const safeJsonParse = (value, fallback) => {
+const REQUIRED_HEADERS = [
+    "name",
+    "email",
+    "phonenumber",
+    "profilImage",
+    "Contact_id",
+];
+
+// HELPERS 
+
+const normalizeEmail = (value) => value.trim().toLowerCase();
+const normalizePhone = (value) => value.replace(/\D/g, "");
+
+
+const getUsers = () => {
     try {
-        return JSON.parse(value);
+        return JSON.parse(localStorage.getItem("users")) || [];
     } catch {
-        return fallback;
+        return [];
     }
 };
 
-const getUsers = () => safeJsonParse(localStorage.getItem("users"), []) || [];
-const getCurrentUser = () =>
-    safeJsonParse(localStorage.getItem("currentUser"), null);
-
-const persistUsersAndCurrentUser = (users, currentUser) => {
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+const getCurrentUser = () => {
+    try {
+        return JSON.parse(localStorage.getItem("currentUser"));
+    } catch {
+        return null;
+    }
 };
+
+//   HOOK  
 
 export default function useContactsDashboard() {
     const navigate = useNavigate();
-    const initialUser = getCurrentUser();
+    const fileInputRef = useRef(null);
 
-    const [errors, setErrors] = useState({});
-    const [userName, setUserName] = useState(initialUser?.name || "User");
-    const [userData, setUserData] = useState(initialUser?.Contacts || []);
-    const [editingContactId, setEditingContactId] = useState(null);
+    const [userData, setUserData] = useState([]);
+    const [userName, setUserName] = useState("User");
     const [formData, setFormData] = useState(DEFAULT_FORM);
+    const [errors, setErrors] = useState({});
     const [previewUrl, setPreviewUrl] = useState("");
-    const [openForm,setopenForm] = useState(false);
+    const [editingContactId, setEditingContactId] = useState(null);
+    const [openForm, setopenForm] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
     const [notification, setNotification] = useState({
         open: false,
         message: "",
-        severity: "success",
+        severity: "",
     });
 
-    const fileInputRef = useRef(null);
+//  AUTH CHECK 
 
     useEffect(() => {
-        if (!getCurrentUser()) {
-            navigate("/login");
+        const currentUser = getCurrentUser();
+        if (!currentUser.User_id) {
+            navigate("/");
+            return;
         }
+
+        const users = getUsers();
+        const matchedUser = users.find(
+            u => u.User_id === currentUser.User_id
+        );
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setUserName(matchedUser.name || "User");
+        setUserData(matchedUser.Contacts || []);
     }, [navigate]);
 
-    useEffect(() => {
-        return () => {
-            if (previewUrl?.startsWith("blob:")) {
-                URL.revokeObjectURL(previewUrl);
-            }
-        };
-    }, [previewUrl]);
 
-    // Multi tab sync by the Local Storage
+    //   MULTI TAB SYNC  
 
     useEffect(() => {
-        const handleStorageSync = (event) => {
-            if (event.storageArea !== localStorage) {
-                return;
-            }
+        const handleStorageChange = () => {
 
-            if (event.key && event.key !== "users" && event.key !== "currentUser") {
-                return;
-            }
+            const currentUser = getCurrentUser();
+            if (!currentUser.User_id) return;
 
-            const latestCurrentUser = getCurrentUser();
+            const users = getUsers();
 
-            if (!latestCurrentUser) {
-                navigate("/login");
-                return;
-            }
+            const matchedUser = users.find(
+                user => user.User_id === currentUser.User_id
+            );
 
-            const latestContacts = Array.isArray(latestCurrentUser.Contacts)
-                ? latestCurrentUser.Contacts
-                : [];
+            if (!matchedUser) return;
 
-            setUserName(latestCurrentUser.name || "User");
-            setUserData(latestContacts);
-
-            if (
-                editingContactId !== null &&
-                !latestContacts.some((contact) => contact.Contact_id === editingContactId)
-            ) {
-                setEditingContactId(null);
-            }
+            setUserData(matchedUser.Contacts || []);
+            setUserName(matchedUser.name || "User");
         };
 
-        window.addEventListener("storage", handleStorageSync);
+        window.addEventListener("storage", handleStorageChange);
 
         return () => {
-            window.removeEventListener("storage", handleStorageSync);
+            window.removeEventListener("storage", handleStorageChange);
         };
-    }, [editingContactId, navigate]);
+    }, []);
 
-    // Reseting Form State
 
-    const resetFormState = () => {
-        setFormData(DEFAULT_FORM);
-        setPreviewUrl("");
-        setErrors({});
-        setEditingContactId(null);
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-    };
+    //   NOTIFICATIONS  
 
     const showSuccess = (message) => {
         setNotification({
@@ -122,269 +118,302 @@ export default function useContactsDashboard() {
         });
     };
 
-    const handleCloseNotification = (_, reason) => {
-        if (reason === "clickaway") {
-            return;
-        }
-
-        setNotification((prev) => ({
-            ...prev,
-            open: false,
-        }));
-    };
-
-    const requireCurrentUser = () => {
-        const currentUser = getCurrentUser();
-
-        if (!currentUser) {
-            navigate("/login");
-            return null;
-        }
-
-        return currentUser;
-    };
-
-    const updateCurrentUserContacts = (contactsUpdater) => {
-        const users = getUsers();
-        const currentUser = requireCurrentUser();
-
-        if (!currentUser) {
-            return null;
-        }
-
-        const updatedUsers = users.map((user) => {
-            if (user.User_id !== currentUser.User_id) {
-                return user;
-            }
-
-            const existingContacts = Array.isArray(user.Contacts) ? user.Contacts : [];
-
-            return {
-                ...user,
-                Contacts: contactsUpdater(existingContacts),
-            };
+    const showError = (message) => {
+        setNotification({
+            open: true,
+            message,
+            severity: "error",
         });
-
-        const updatedCurrentUser =
-            updatedUsers.find((user) => user.User_id === currentUser.User_id) ||
-            currentUser;
-
-        persistUsersAndCurrentUser(updatedUsers, updatedCurrentUser);
-        setUserData(updatedCurrentUser.Contacts || []);
-
-        return updatedCurrentUser;
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("currentUser");
-
-        navigate(-1);
+    const handleCloseNotification = () => {
+        setNotification(prev => ({ ...prev, open: false }));
     };
+
+    //  FORM  
 
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        setFormData((prev) => ({
+        setFormData(prev => ({
             ...prev,
             [name]: value,
         }));
 
         if (errors[name]) {
-            setErrors((prev) => ({
+            setErrors(prev => ({
                 ...prev,
                 [name]: "",
             }));
         }
     };
 
-    const handleFileChange = (event) => {
-        const file = event.target.files?.[0];
 
-        if (!file) {
-            return;
-        }
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-        const nextPreviewUrl = URL.createObjectURL(file);
         const reader = new FileReader();
-
         reader.onloadend = () => {
-            setFormData((prev) => ({
+            setPreviewUrl(reader.result);
+            setFormData(prev => ({
                 ...prev,
                 profilImage: reader.result,
             }));
-
-            setPreviewUrl((prev) => {
-                if (prev?.startsWith("blob:")) {
-                    URL.revokeObjectURL(prev);
-                }
-
-                return nextPreviewUrl;
-            });
         };
-
         reader.readAsDataURL(file);
     };
 
     const handleRemoveImage = () => {
-        if (previewUrl?.startsWith("blob:")) {
-            URL.revokeObjectURL(previewUrl);
-        }
-
         setPreviewUrl("");
-        setFormData((prev) => ({
-            ...prev,
-            profilImage: "",
-        }));
+        setFormData(prev => ({ ...prev, profilImage: "" }));
+    };
 
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+    const resetForm = () => {
+        setFormData(DEFAULT_FORM);
+        setPreviewUrl("");
+        setErrors({});
+        setEditingContactId(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    // SAVE CONTACT
+
+    const saveContactsToStorage = (updatedContacts) => {
+        const users = getUsers();
+        const currentUser = getCurrentUser();
+
+        const updatedUsers = users.map(user => {
+            if (user.User_id === currentUser.User_id) {
+                return { ...user, Contacts: updatedContacts };
+            }
+            return user;
+        });
+
+        localStorage.setItem("users", JSON.stringify(updatedUsers));
+        localStorage.setItem("currentUser",JSON.stringify({ User_id: currentUser.User_id })
+        );
+
+        setUserData(updatedContacts);
     };
 
     const validateForm = () => {
-        const nextErrors = {};
+        const newErrors = {};
+        const phone = normalizePhone(formData.phonenumber);
 
-        if (!previewUrl) {
-            nextErrors.profilImage = "Profile image is required";
-        }
+        if (!formData.name.trim())
+            newErrors.name = "Name is required";
 
-        if (!formData.name.trim()) {
-            nextErrors.name = "Name is required";
-        }
+        if (!formData.email.trim())
+            newErrors.email = "Email is required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+            newErrors.email = "Invalid email";
 
-        if (!formData.email.trim()) {
-            nextErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            nextErrors.email = "Please enter a valid email address";
-        }
+        if (!phone)
+            newErrors.phonenumber = "Phone required";
+        else if (phone.length !== 10)
+            newErrors.phonenumber = "Phone must be 10 digits";
 
-        if (!formData.phonenumber) {
-            nextErrors.phonenumber = "phonenumber is required";
-        } else if (formData.phonenumber.length !== 10) {
-            nextErrors.phonenumber = "Phone number must contain 10 digits";
-        }
-
-        setErrors(nextErrors);
-
-        return Object.keys(nextErrors).length === 0;
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
 
-        if (!validateForm()) {
-            return;
-        }
-
-        updateCurrentUserContacts((existingContacts) => {
-            if (editingContactId !== null) {
-                return existingContacts.map((contact) =>
-                    contact.Contact_id === editingContactId
-                        ? {
-                            ...contact,
-                            ...formData,
-                            Contact_id: contact.Contact_id,
-                        }
-                        : contact,
-                );
-            }
-
-            return [
-                ...existingContacts,
-                {
-                    ...formData,
-                    Contact_id: uuidv4(),
-                },
-            ];
-        });
-
-        const wasEditing = editingContactId !== null;
-        resetFormState();
-        handleCloseForm();
-
-        if (wasEditing) {
-            showSuccess("Contact updated successfully.");
-            return;
-        }
-
-        showSuccess("Contact added successfully.");
-    };
-
-    const handleDeleteContact = (contactId) => {
-        updateCurrentUserContacts((existingContacts) =>
-            existingContacts.filter((contact) => contact.Contact_id !== contactId),
+        const users = getUsers();
+        const currentUser = getCurrentUser();
+        const matchedUser = users.find(
+            u => u.User_id === currentUser.User_id
         );
 
-        showSuccess("Contact deleted successfully.");
+        const existingContacts = matchedUser.Contacts || [];
 
-        if (editingContactId === contactId) {
-            resetFormState();
+        const email = normalizeEmail(formData.email);
+        const phone = normalizePhone(formData.phonenumber);
+
+        const duplicateErrors = {};
+
+        if (
+            existingContacts.some(contact =>
+                contact.Contact_id !== editingContactId &&
+                normalizeEmail(contact.email) === email
+            )
+        ) {
+            duplicateErrors.email = "Email already exists";
         }
+
+        if (
+            existingContacts.some(contact =>
+                contact.Contact_id !== editingContactId &&
+                normalizePhone(contact.phonenumber) === phone
+            )
+        ) {
+            duplicateErrors.phonenumber = "Phone number already exists";
+        }
+
+        if (Object.keys(duplicateErrors).length > 0) {
+            setErrors(duplicateErrors);
+            return;
+        }
+
+
+        let updatedContacts;
+
+        if (editingContactId) {
+            updatedContacts = existingContacts.map(contact =>
+                contact.Contact_id === editingContactId
+                    ? { ...contact, ...formData }
+                    : contact
+            );
+        } else {
+            updatedContacts = [
+                ...existingContacts,
+                { ...formData, Contact_id: uuidv4() },
+            ];
+        }
+
+        saveContactsToStorage(updatedContacts);
+        resetForm();
+        setopenForm(false);
+        showSuccess("Contact saved successfully.");
     };
+
+    const handleAddContact = (e) => handleSubmit(e);
 
     const handleEditContact = (contact) => {
         setEditingContactId(contact.Contact_id);
-        setFormData({
-            name: contact.name || "",
-            email: contact.email || "",
-            phonenumber: contact.phonenumber || "",
-            profilImage: contact.profilImage || "",
-        });
+        setFormData(contact);
         setPreviewUrl(contact.profilImage || "");
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-        handleOpenForm();
+        setopenForm(true);
     };
 
     const handleCancelEdit = () => {
-        resetFormState();
-        handleCloseForm();
+        resetForm();
+        setopenForm(false);
     };
 
-    const handleAddContactClick = () => {
-        handleSubmit();
+    const handleDeleteContact = (contactId) => {
+        if (!window.confirm("Delete this contact?")) return;
+
+        const updated = userData.filter(
+            c => c.Contact_id !== contactId
+        );
+
+        saveContactsToStorage(updated);
+        showError("Contact deleted successfully.");
     };
 
-    const handleOpenImport = () => setImportOpen(true);
-    const handleCloseImport = () => setImportOpen(false);
+    //  CSV IMPORT  
 
 
-    const handleOpenForm = () => setopenForm(true);
-    const handleCloseForm = () => setopenForm(false);
+    const mapRowsToObjects = (rows) => {
+        const headers = rows[0];
+
+        return rows.slice(1).map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index];
+            });
+            return obj;
+        });
+    };
 
     const handleImportContacts = (rows) => {
-        if (!rows?.length) {
+        if (!rows.length) {
+            showError("Empty file.");
             return;
         }
 
-        const normalizedRows = rows
-        // step 1 : remove the header from the csv
-            .slice(1)
-            // step 2 :  filter for the every field value availability
-            .filter((row) => row.length >= 3)
-            // step 3 :  loop on rows and get the value from it and show it in table
-            .map((row) => ({
-                name: row[0] || "",
-                email: row[1] || "",
-                phonenumber: row[2] || "",
-                profilImage: row[3] || "",
-                Contact_id: uuidv4(),
-            }));
+        const headers = rows[0];
 
-
-        if (!normalizedRows.length) {
+        if (
+            headers.length !== REQUIRED_HEADERS.length ||
+            headers.some((h, i) => h !== REQUIRED_HEADERS[i])
+        ) {
+            showError("Invalid CSV format.");
             return;
         }
 
-        updateCurrentUserContacts((existingContacts) => [
+        const users = getUsers();
+        const currentUser = getCurrentUser();
+        if (!currentUser?.User_id) {
+            showError("User not found.");
+            return;
+        }
+
+        const matchedUser = users.find(
+            user => user.User_id === currentUser.User_id
+        );
+
+        const existingContacts = matchedUser?.Contacts || [];
+
+        const existingEmails = existingContacts.map(c =>
+            normalizeEmail(c.email)
+        );
+
+        const existingPhones = existingContacts.map(c =>
+            normalizePhone(c.phonenumber)
+        );
+
+        const importContacts = mapRowsToObjects(rows);
+
+        const newContacts = [];
+
+        importContacts.forEach(row => {
+            const name = String(row.name || "").trim();
+            const email = normalizeEmail(row.email || "");
+            const phone = normalizePhone(row.phonenumber || "");
+            const profilImage = row.profilImage || "";
+
+            if (!name ||!email ||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||phone.length !== 10) return;
+
+            const isDuplicate =
+                existingEmails.includes(email) ||
+                existingPhones.includes(phone) ||
+                newContacts.some(c =>
+                    normalizeEmail(c.email) === email ||
+                    normalizePhone(c.phonenumber) === phone
+                );
+
+            if (!isDuplicate) {
+                newContacts.push({
+                    name,
+                    email,
+                    phonenumber: phone,
+                    profilImage,
+                    Contact_id: uuidv4(),
+                });
+            }
+        });
+
+        console.log("New Contacts To Add:", newContacts);
+
+        if (!newContacts.length) {
+            showError("No new contacts found.");
+            return;
+        }
+
+        saveContactsToStorage([
             ...existingContacts,
-            ...normalizedRows,
+            ...newContacts,
         ]);
 
-        showSuccess(`${normalizedRows.length} contact imported successfully.`);
+        showSuccess("Contacts imported successfully.");
+        setImportOpen(false);
     };
+
+
+
+    //   LOGOUT  
+
+    const handleLogout = () => {
+        if (!window.confirm("Logout?")) return;
+        localStorage.removeItem("currentUser");
+        navigate("/");
+    };
+
 
     return {
         userName,
@@ -398,15 +427,16 @@ export default function useContactsDashboard() {
         notification,
         isEditMode: editingContactId !== null,
         setopenForm,
-        handleOpenForm,
-        handleCloseForm,
+        handleOpenForm: () => setopenForm(true),
+        handleCloseForm: handleCancelEdit,
+        showError,
         showSuccess,
         handleCloseNotification,
         handleLogout,
-        handleOpenImport,
-        handleCloseImport,
+        handleOpenImport: () => setImportOpen(true),
+        handleCloseImport: () => setImportOpen(false),
         handleImportContacts,
-        handleAddContactClick,
+        handleAddContact,
         handleChange,
         handleFileChange,
         handleRemoveImage,
@@ -416,3 +446,5 @@ export default function useContactsDashboard() {
         handleCancelEdit,
     };
 }
+
+

@@ -46,8 +46,11 @@ const TableContact = ({ userData, onDeleteContact, onEditContact }) => {
                                             src={contact.profilImage}
                                         />
                                     ) : (
-                                        "—"
+                                    <Avatar
+                                            src={undefined}
+                                        />
                                     )}
+
                                 </TableCell>
                                 <TableCell 
                                 // sx={{ wordBreak: "break-word" }}

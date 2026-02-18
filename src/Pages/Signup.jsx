@@ -14,8 +14,6 @@ import AuthFormCard from "../Components/AuthFormCard";
 function Signup() {
     const navigate = useNavigate();
 
-
-
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -25,23 +23,18 @@ function Signup() {
     const [errors, setErrors] = useState({});
     const [notificationOpen, setNotificationOpen] = useState(false);
 
-
-
     const handleChange = (e) => {
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [e.target.name]: e.target.value,
         });
         if (errors[e.target.name]) {
             setErrors({
                 ...errors,
-                [e.target.name]: ""
+                [e.target.name]: "",
             });
         }
     };
-
-
-
 
     const validateForm = () => {
         const newErrors = {};
@@ -60,26 +53,19 @@ function Signup() {
         }
         if (!formData.confirmpassword) {
             newErrors.confirmpassword = "Confirm Password is Required";
-        }
-        else if (formData.password != formData.confirmpassword) {
-            newErrors.confirmpassword = "Check the password "
+        } else if (formData.password != formData.confirmpassword) {
+            newErrors.confirmpassword = "Check the password ";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
-
-
-
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateForm()) return;
         const users = JSON.parse(localStorage.getItem("users")) || [];
         const email = formData.email.trim().toLowerCase();
-        const userExists = users.find(
-            (user) => user.email.toLowerCase() === email
-        );
+        const userExists = users.find((user) => user.email.toLowerCase() === email);
         if (userExists) {
             setErrors({ email: "Email already registered" });
             return;
@@ -89,27 +75,26 @@ function Signup() {
             name: formData.name.trim(),
             email: email,
             password: formData.password,
-            Contacts: []
+            Contacts: [],
         };
         users.push(newUser);
         localStorage.setItem("users", JSON.stringify(users));
         setNotificationOpen(true);
         setTimeout(() => {
-            navigate("/login", {
-                state: { message: "Signup successful. Please login." },
-            });
+            navigate("/");
         }, 700);
     };
-
-
-
-
 
     return (
         <>
             <AuthFormCard title="Sign Up" subtitle="Create your account to continue">
-                <Stack component="form" noValidate onSubmit={handleSubmit} spacing={1.8} sx={{ width: "100%" }}>
-
+                <Stack
+                    component="form"
+                    noValidate
+                    onSubmit={handleSubmit}
+                    spacing={1.8}
+                    sx={{ width: "100%" }}
+                >
                     <TextField
                         label="Name"
                         name="name"
@@ -169,7 +154,7 @@ function Signup() {
                             component="button"
                             variant="body2"
                             type="button"
-                            onClick={() => navigate("/login")}
+                            onClick={() => navigate("/")}
                             sx={{ cursor: "pointer", fontWeight: 600 }}
                         >
                             Login here
@@ -180,7 +165,7 @@ function Signup() {
 
             <Snackbar
                 open={notificationOpen}
-                autoHideDuration={2200}
+                autoHideDuration={700}
                 onClose={() => setNotificationOpen(false)}
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >
