@@ -61,7 +61,6 @@ export default function useContactsDashboard() {
     });
 
 //  AUTH CHECK 
-
     useEffect(() => {
         const currentUser = getCurrentUser();
         if (!currentUser.User_id) {
@@ -77,11 +76,10 @@ export default function useContactsDashboard() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setUserName(matchedUser.name || "User");
         setUserData(matchedUser.Contacts || []);
-    }, [navigate]);
+    }, []);
 
 
-    //   MULTI TAB SYNC  
-
+//  MULTI TAB SYNC  
     useEffect(() => {
         const handleStorageChange = () => {
 
@@ -109,7 +107,6 @@ export default function useContactsDashboard() {
 
 
     //   NOTIFICATIONS  
-
     const showSuccess = (message) => {
         setNotification({
             open: true,
@@ -131,7 +128,6 @@ export default function useContactsDashboard() {
     };
 
     //  FORM  
-
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -147,7 +143,6 @@ export default function useContactsDashboard() {
             }));
         }
     };
-
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -307,7 +302,6 @@ export default function useContactsDashboard() {
 
     //  CSV IMPORT  
 
-
     const mapRowsToObjects = (rows) => {
         const headers = rows[0];
 
@@ -410,6 +404,7 @@ export default function useContactsDashboard() {
         if (!window.confirm("Logout?")) return;
         localStorage.removeItem("currentUser");
         navigate("/");
+        showError("Logout Successfully ");
     };
 
 
