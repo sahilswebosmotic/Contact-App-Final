@@ -388,8 +388,6 @@ export default function useContactsDashboard() {
             }
         });
 
-        console.log("New Contacts To Add:", newContacts);
-
         if (!newContacts.length) {
             showError("No new contacts found.");
             return;
