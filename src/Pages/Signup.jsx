@@ -82,7 +82,7 @@ function Signup() {
         setNotificationOpen(true);
         setTimeout(() => {
             navigate("/");
-        }, 700);
+        }, 500);
     };
 
     return (
@@ -165,12 +165,12 @@ function Signup() {
 
             <Snackbar
                 open={notificationOpen}
-                autoHideDuration={700}
+                autoHideDuration={500}
                 onClose={() => setNotificationOpen(false)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
                 <Alert
-                    onClose={() => setNotificationOpen(false)}
+
                     severity="success"
                     variant="filled"
                     sx={{ width: "100%" }}

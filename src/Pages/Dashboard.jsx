@@ -2,7 +2,7 @@
 import { Alert, Box, Snackbar } from "@mui/material";
 import AddContact from "../Components/AddContact";
 import DashboardOverview from "../Components/DashboardOverview";
-import DashboardTopBar from "../Components/DashboardTopBar";
+import DashboardTopBar from "../Components/DashboardHeader";
 import ImportContact from "../Components/ImportContact";
 import TableContact from "../Components/TableContact";
 import ContactsDashboardOpt  from "../utils/useContactsDashboard";
@@ -12,6 +12,7 @@ import ContactsDashboardOpt  from "../utils/useContactsDashboard";
 function Dashboard() {
 
     const {
+        userName,
         openForm,
         userData,
         importOpen,
@@ -21,6 +22,12 @@ function Dashboard() {
         fileInputRef,
         notification,
         isEditMode,
+        openLogout,
+        openDelete,
+        handleOpenDelete,
+        handleCloseDelete ,
+        handleOpenLogout,
+        handleCloseLogout,
         handleCloseForm,
         handleOpenForm,
         handleCloseNotification,
@@ -36,6 +43,7 @@ function Dashboard() {
         handleDeleteContact,
         handleEditContact,
         handleCancelEdit,
+        handleExportContacts,
     } = ContactsDashboardOpt();
 
 
@@ -45,12 +53,17 @@ function Dashboard() {
                 userData={userData}
                 onImportOpen={handleOpenImport}
                 onLogout={handleLogout}
+                handleExportContacts = {handleExportContacts}
+                openLogout={openLogout}
+                handleCloseLogout={handleCloseLogout}
+                handleOpenLogout={handleOpenLogout}
             />
 
 
             <DashboardOverview
                 totalContacts={userData.length}
                 onOpenForm={handleOpenForm}
+                userName={userName}
             />
 
             <AddContact
@@ -73,6 +86,9 @@ function Dashboard() {
                 userData={userData}
                 onDeleteContact={handleDeleteContact}
                 onEditContact={handleEditContact}
+                openDelete={openDelete}
+                handleCloseDelete={handleCloseDelete}
+                handleOpenDelete={handleOpenDelete}
             />
 
 
@@ -84,12 +100,11 @@ function Dashboard() {
 
             <Snackbar
                 open={notification.open}
-                autoHideDuration={2600}
+                autoHideDuration={1500}
                 onClose={handleCloseNotification}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
                 <Alert
-                    onClose={handleCloseNotification}
                     severity={notification.severity}
                     variant="filled"
                     sx={{ width: "100%" }}
@@ -103,3 +118,6 @@ function Dashboard() {
 
 
 export default Dashboard;
+
+
+

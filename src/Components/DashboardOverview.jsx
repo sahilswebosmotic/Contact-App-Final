@@ -3,6 +3,7 @@ import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 const DashboardOverview = ({
     totalContacts,
     onOpenForm,
+    userName
 }) => {
     return (
         <Box sx={{ px: { xs: 1.5, sm: 2, md: 10 }, py: { xs: 2.5, sm: 4 } }}>
@@ -37,6 +38,9 @@ const DashboardOverview = ({
                             }}
                         >
                             Contacts Dashboard
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Welcome back, {userName}!
                         </Typography>
                         <Chip
                             color="info"

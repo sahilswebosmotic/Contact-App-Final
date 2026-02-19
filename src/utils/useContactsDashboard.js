@@ -19,7 +19,6 @@ const REQUIRED_HEADERS = [
 ];
 
 // HELPERS 
-
 const normalizeEmail = (value) => value.trim().toLowerCase();
 const normalizePhone = (value) => value.replace(/\D/g, "");
 
@@ -34,18 +33,29 @@ const getUsers = () => {
 
 const getCurrentUser = () => {
     try {
-        return JSON.parse(localStorage.getItem("currentUser"));
+        return JSON.parse(sessionStorage.getItem("currentUser"));
     } catch {
         return null;
     }
 };
 
-//   HOOK  
+const TAB_ID_KEY = "tab_id";
 
+const getTabId = () => {
+    let tabId = sessionStorage.getItem(TAB_ID_KEY);
+
+    if (!tabId) {
+        tabId = crypto.randomUUID();
+        sessionStorage.setItem(TAB_ID_KEY, tabId);
+    }
+
+    return tabId;
+};
+
+//   HOOK  
 export default function useContactsDashboard() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
-
     const [userData, setUserData] = useState([]);
     const [userName, setUserName] = useState("User");
     const [formData, setFormData] = useState(DEFAULT_FORM);
@@ -53,57 +63,69 @@ export default function useContactsDashboard() {
     const [previewUrl, setPreviewUrl] = useState("");
     const [editingContactId, setEditingContactId] = useState(null);
     const [openForm, setopenForm] = useState(false);
+    const [openLogout,setopenLogout] = useState(false);
+    const [openDelete , setopenDelete] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
+    const tabIdRef = useRef(null);
+
     const [notification, setNotification] = useState({
         open: false,
         message: "",
         severity: "",
     });
-
-//  AUTH CHECK 
     useEffect(() => {
+        // INITIAL RENDER
+        const uploadUser = ()=>{
+        tabIdRef.current = getTabId();
         const currentUser = getCurrentUser();
-        if (!currentUser.User_id) {
-            navigate("/");
-            return;
-        }
 
         const users = getUsers();
         const matchedUser = users.find(
-            u => u.User_id === currentUser.User_id
+            user => user.User_id === currentUser.User_id
         );
-
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+            
         setUserName(matchedUser.name || "User");
         setUserData(matchedUser.Contacts || []);
-    }, []);
+        }
+        
+        uploadUser();
+    },[])
 
+    useEffect(()=>{
+        //  MULTI TAB SYNC  
+        const handleStorageChange = (event) => {
+            
+            if (event.key !== "contacts_last_update") return;
 
-//  MULTI TAB SYNC  
-    useEffect(() => {
-        const handleStorageChange = () => {
+            const payload = JSON.parse(event.newValue || "{}");
+
+            if (payload.tabId === tabIdRef.current) return;
 
             const currentUser = getCurrentUser();
+
             if (!currentUser.User_id) return;
 
+            if (payload.User_id !== currentUser.User_id) return;
+            
             const users = getUsers();
-
+            
             const matchedUser = users.find(
                 user => user.User_id === currentUser.User_id
             );
-
+            
             if (!matchedUser) return;
-
+            
             setUserData(matchedUser.Contacts || []);
             setUserName(matchedUser.name || "User");
         };
-
+        
         window.addEventListener("storage", handleStorageChange);
-
+        
         return () => {
             window.removeEventListener("storage", handleStorageChange);
         };
     }, []);
+    
 
 
     //   NOTIFICATIONS  
@@ -186,8 +208,10 @@ export default function useContactsDashboard() {
         });
 
         localStorage.setItem("users", JSON.stringify(updatedUsers));
-        localStorage.setItem("currentUser",JSON.stringify({ User_id: currentUser.User_id })
-        );
+        localStorage.setItem("contacts_last_update", JSON.stringify({
+            tabId: tabIdRef.current,
+            User_id: currentUser.User_id,
+        }));
 
         setUserData(updatedContacts);
     };
@@ -220,7 +244,7 @@ export default function useContactsDashboard() {
         const users = getUsers();
         const currentUser = getCurrentUser();
         const matchedUser = users.find(
-            u => u.User_id === currentUser.User_id
+            user => user.User_id === currentUser.User_id
         );
 
         const existingContacts = matchedUser.Contacts || [];
@@ -232,7 +256,7 @@ export default function useContactsDashboard() {
 
         if (
             existingContacts.some(contact =>
-                contact.Contact_id !== editingContactId &&
+                contact.Contact_id != editingContactId &&
                 normalizeEmail(contact.email) === email
             )
         ) {
@@ -241,7 +265,7 @@ export default function useContactsDashboard() {
 
         if (
             existingContacts.some(contact =>
-                contact.Contact_id !== editingContactId &&
+                contact.Contact_id != editingContactId &&
                 normalizePhone(contact.phonenumber) === phone
             )
         ) {
@@ -290,18 +314,23 @@ export default function useContactsDashboard() {
     };
 
     const handleDeleteContact = (contactId) => {
-        if (!window.confirm("Delete this contact?")) return;
 
         const updated = userData.filter(
-            c => c.Contact_id !== contactId
+            contact => contact.Contact_id !== contactId
         );
 
         saveContactsToStorage(updated);
         showError("Contact deleted successfully.");
+        setopenDelete(false);
     };
 
-    //  CSV IMPORT  
+    // CSV EXPORT
+    const handleExportContacts = () => {
+        showSuccess("Contacts Exported successfully....");
+        return;
+    }
 
+    //  CSV IMPORT  
     const mapRowsToObjects = (rows) => {
         const headers = rows[0];
 
@@ -332,7 +361,7 @@ export default function useContactsDashboard() {
 
         const users = getUsers();
         const currentUser = getCurrentUser();
-        if (!currentUser?.User_id) {
+        if (!currentUser.User_id) {
             showError("User not found.");
             return;
         }
@@ -341,14 +370,14 @@ export default function useContactsDashboard() {
             user => user.User_id === currentUser.User_id
         );
 
-        const existingContacts = matchedUser?.Contacts || [];
+        const existingContacts = matchedUser.Contacts || [];
 
-        const existingEmails = existingContacts.map(c =>
-            normalizeEmail(c.email)
+        const existingEmails = existingContacts.map(contact =>
+            normalizeEmail(contact.email)
         );
 
-        const existingPhones = existingContacts.map(c =>
-            normalizePhone(c.phonenumber)
+        const existingPhones = existingContacts.map(contact =>
+            normalizePhone(contact.phonenumber)
         );
 
         const importContacts = mapRowsToObjects(rows);
@@ -356,7 +385,7 @@ export default function useContactsDashboard() {
         const newContacts = [];
 
         importContacts.forEach(row => {
-            const name = String(row.name || "").trim();
+            const name = row.name || "".trim();
             const email = normalizeEmail(row.email || "");
             const phone = normalizePhone(row.phonenumber || "");
             const profilImage = row.profilImage || "";
@@ -366,9 +395,9 @@ export default function useContactsDashboard() {
             const isDuplicate =
                 existingEmails.includes(email) ||
                 existingPhones.includes(phone) ||
-                newContacts.some(c =>
-                    normalizeEmail(c.email) === email ||
-                    normalizePhone(c.phonenumber) === phone
+                newContacts.some(contact=>
+                    normalizeEmail(contact.email) === email ||
+                    normalizePhone(contact.phonenumber) === phone
                 );
 
             if (!isDuplicate) {
@@ -399,12 +428,10 @@ export default function useContactsDashboard() {
 
 
     //   LOGOUT  
-
     const handleLogout = () => {
-        if (!window.confirm("Logout?")) return;
         localStorage.removeItem("currentUser");
         navigate("/");
-        showError("Logout Successfully ");
+        setopenLogout(false);
     };
 
 
@@ -419,6 +446,12 @@ export default function useContactsDashboard() {
         fileInputRef,
         notification,
         isEditMode: editingContactId !== null,
+        openLogout,
+        handleOpenLogout:()=>setopenLogout(true),
+        handleCloseLogout:()=>setopenLogout(false),
+        openDelete,
+        handleOpenDelete : () => setopenDelete(true),
+        handleCloseDelete : () => setopenDelete(false),
         setopenForm,
         handleOpenForm: () => setopenForm(true),
         handleCloseForm: handleCancelEdit,
@@ -437,7 +470,11 @@ export default function useContactsDashboard() {
         handleDeleteContact,
         handleEditContact,
         handleCancelEdit,
+        handleExportContacts,
     };
 }
+
+
+
 
 

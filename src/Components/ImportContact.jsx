@@ -37,11 +37,8 @@ const ImportContact = ({ open, onClose, onImport }) => {
 
                         <CSVReader
                             onUploadAccepted={(results) => {
-                                const rows = results?.data || [];
-
-                                if (onImport) onImport(rows);
-
-                                // onClose();
+                                const rows = results.data || [];
+                                onImport(rows);
                             }}
                         >
                             {({ getRootProps, acceptedFile, getRemoveFileProps }) => (

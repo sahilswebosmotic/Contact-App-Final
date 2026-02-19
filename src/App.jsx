@@ -3,7 +3,6 @@ import Signup from "./Pages/Signup";
 import Login from "./Pages/Login";
 import Dashboard from "./Pages/Dashboard";
 function App() {
-  {/* <Route index element={<Navigate to="add-contact" replace />} /> */}
   return (
     <BrowserRouter>
       <Routes>

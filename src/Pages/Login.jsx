@@ -84,7 +84,7 @@ function Login() {
             return;
         }
 
-        localStorage.setItem("currentUser", JSON.stringify({User_id:emailUser.User_id}));
+        sessionStorage.setItem("currentUser", JSON.stringify({User_id:emailUser.User_id}));
 
         setNotification({
             open: true,
@@ -94,7 +94,7 @@ function Login() {
 
         setTimeout(() => {
             navigate("/dashboard");
-        }, 700);
+        }, 500);
     };
 
     return (
@@ -144,12 +144,11 @@ function Login() {
 
             <Snackbar
                 open={notification.open}
-                autoHideDuration={700}
+                autoHideDuration={500}
                 onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
                 <Alert
-                    onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
                     severity={notification.severity}
                     variant="filled"
                     sx={{ width: "100%" }}
