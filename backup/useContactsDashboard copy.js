@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-//   DEFAULT FORM  
+import { getFromLocalStorage,getFromSessoinStorage } from "./storage";
 
 const DEFAULT_FORM = {
     name: "",
@@ -25,7 +25,7 @@ const normalizePhone = (value) => value.replace(/\D/g, "");
 
 const getUsers = () => {
     try {
-        return JSON.parse(localStorage.getItem("users")) || [];
+        return getFromLocalStorage('users') || [];
     } catch {
         return [];
     }
@@ -33,7 +33,7 @@ const getUsers = () => {
 
 const getCurrentUser = () => {
     try {
-        return JSON.parse(sessionStorage.getItem("currentUser"));
+        return getFromSessoinStorage('currentUser');
     } catch {
         return null;
     }
@@ -45,7 +45,7 @@ const getTabId = () => {
     let tabId = sessionStorage.getItem(TAB_ID_KEY);
 
     if (!tabId) {
-        tabId = crypto.randomUUID();
+        tabId = uuidv4();
         sessionStorage.setItem(TAB_ID_KEY, tabId);
     }
 
@@ -62,9 +62,9 @@ export default function useContactsDashboard() {
     const [errors, setErrors] = useState({});
     const [previewUrl, setPreviewUrl] = useState("");
     const [editingContactId, setEditingContactId] = useState(null);
-    const [openForm, setopenForm] = useState(false);
-    const [openLogout,setopenLogout] = useState(false);
-    const [openDelete , setopenDelete] = useState(false);
+    const [openForm, setOpenForm] = useState(false);
+    const [openLogout, setOpenLogout] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
     const tabIdRef = useRef(null);
 
@@ -75,58 +75,46 @@ export default function useContactsDashboard() {
     });
     useEffect(() => {
         // INITIAL RENDER
-        const uploadUser = ()=>{
-        tabIdRef.current = getTabId();
-        const currentUser = getCurrentUser();
-
-        const users = getUsers();
-        const matchedUser = users.find(
-            user => user.User_id === currentUser.User_id
-        );
-            
-        setUserName(matchedUser.name || "User");
-        setUserData(matchedUser.Contacts || []);
-        }
-        
-        uploadUser();
-    },[])
-
-    useEffect(()=>{
-        //  MULTI TAB SYNC  
-        const handleStorageChange = (event) => {
-            
-            if (event.key !== "contacts_last_update") return;
-
-            const payload = JSON.parse(event.newValue || "{}");
-
-            if (payload.tabId === tabIdRef.current) return;
-
+        const uploadUser = () => {
+            tabIdRef.current = getTabId();
             const currentUser = getCurrentUser();
 
-            if (!currentUser.User_id) return;
-
-            if (payload.User_id !== currentUser.User_id) return;
-            
             const users = getUsers();
-            
             const matchedUser = users.find(
                 user => user.User_id === currentUser.User_id
             );
-            
+
+            setUserName(matchedUser.name || "User");
+            setUserData(matchedUser.Contacts || []);
+        }
+
+        uploadUser();
+    }, [])
+
+        // MULTI TAB SYNC
+    useEffect(() => {
+        const handleStorageChange = (event) => {
+            if (event.key !== "contacts_last_update") return;
+            const new_Value = JSON.parse(event.newValue || "{}");
+            if (new_Value.tabId === tabIdRef.current) return; 
+            const currentUser = getCurrentUser();
+            if (!currentUser.User_id) return;
+            if (new_Value.User_id !== currentUser.User_id) return;
+
+            const users = getUsers();
+            const matchedUser = users.find(
+                user => user.User_id === currentUser.User_id
+            );
+
             if (!matchedUser) return;
-            
+
             setUserData(matchedUser.Contacts || []);
             setUserName(matchedUser.name || "User");
         };
-        
-        window.addEventListener("storage", handleStorageChange);
-        
-        return () => {
-            window.removeEventListener("storage", handleStorageChange);
-        };
-    }, []);
-    
 
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
 
     //   NOTIFICATIONS  
     const showSuccess = (message) => {
@@ -211,6 +199,7 @@ export default function useContactsDashboard() {
         localStorage.setItem("contacts_last_update", JSON.stringify({
             tabId: tabIdRef.current,
             User_id: currentUser.User_id,
+            timestamp: Date.now(),  
         }));
 
         setUserData(updatedContacts);
@@ -236,6 +225,7 @@ export default function useContactsDashboard() {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+    // validateForm(normalizePhone,formData,setErrors)
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -295,7 +285,7 @@ export default function useContactsDashboard() {
 
         saveContactsToStorage(updatedContacts);
         resetForm();
-        setopenForm(false);
+        setOpenForm(false);
         showSuccess("Contact saved successfully.");
     };
 
@@ -305,12 +295,12 @@ export default function useContactsDashboard() {
         setEditingContactId(contact.Contact_id);
         setFormData(contact);
         setPreviewUrl(contact.profilImage || "");
-        setopenForm(true);
+        setOpenForm(true);
     };
 
     const handleCancelEdit = () => {
         resetForm();
-        setopenForm(false);
+        setOpenForm(false);
     };
 
     const handleDeleteContact = (contactId) => {
@@ -320,8 +310,8 @@ export default function useContactsDashboard() {
         );
 
         saveContactsToStorage(updated);
-        showError("Contact deleted successfully.");
-        setopenDelete(false);
+        showSuccess("Contact deleted successfully.");
+        setOpenDelete(false);
     };
 
     // CSV EXPORT
@@ -390,12 +380,12 @@ export default function useContactsDashboard() {
             const phone = normalizePhone(row.phonenumber || "");
             const profilImage = row.profilImage || "";
 
-            if (!name ||!email ||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||phone.length !== 10) return;
+            if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || phone.length !== 10) return;
 
             const isDuplicate =
                 existingEmails.includes(email) ||
                 existingPhones.includes(phone) ||
-                newContacts.some(contact=>
+                newContacts.some(contact =>
                     normalizeEmail(contact.email) === email ||
                     normalizePhone(contact.phonenumber) === phone
                 );
@@ -429,9 +419,9 @@ export default function useContactsDashboard() {
 
     //   LOGOUT  
     const handleLogout = () => {
-        localStorage.removeItem("currentUser");
+        sessionStorage.removeItem("currentUser");
         navigate("/");
-        setopenLogout(false);
+        setOpenLogout(false);
     };
 
 
@@ -447,13 +437,13 @@ export default function useContactsDashboard() {
         notification,
         isEditMode: editingContactId !== null,
         openLogout,
-        handleOpenLogout:()=>setopenLogout(true),
-        handleCloseLogout:()=>setopenLogout(false),
+        handleOpenLogout: () => setOpenLogout(true),
+        handleCloseLogout: () => setOpenLogout(false),
         openDelete,
-        handleOpenDelete : () => setopenDelete(true),
-        handleCloseDelete : () => setopenDelete(false),
-        setopenForm,
-        handleOpenForm: () => setopenForm(true),
+        handleOpenDelete: () => setOpenDelete(true),
+        handleCloseDelete: () => setOpenDelete(false),
+        setOpenForm,
+        handleOpenForm: () => setOpenForm(true),
         handleCloseForm: handleCancelEdit,
         showError,
         showSuccess,
@@ -473,8 +463,3 @@ export default function useContactsDashboard() {
         handleExportContacts,
     };
 }
-
-
-
-
-

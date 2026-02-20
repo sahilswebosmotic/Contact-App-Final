@@ -1,11 +1,12 @@
 // import { useEffect } from "react";
 import { Alert, Box, Snackbar } from "@mui/material";
-import AddContact from "../Components/AddContact";
-import DashboardOverview from "../Components/DashboardOverview";
-import DashboardTopBar from "../Components/DashboardHeader";
-import ImportContact from "../Components/ImportContact";
-import TableContact from "../Components/TableContact";
-import ContactsDashboardOpt  from "../utils/useContactsDashboard";
+import AddContact from "../components/AddContact";
+import DashboardOverview from "../components/DashboardOverview";
+import DashboardTopBar from "../components/DashboardHeader";
+import ImportContact from "../components/ImportContact";
+import TableContact from "../components/TableContact";
+import  useContactsDashboard from "../hooks/useContactsDashboard";
+
 
 
 
@@ -44,7 +45,7 @@ function Dashboard() {
         handleEditContact,
         handleCancelEdit,
         handleExportContacts,
-    } = ContactsDashboardOpt();
+    } = useContactsDashboard();
 
 
     return (

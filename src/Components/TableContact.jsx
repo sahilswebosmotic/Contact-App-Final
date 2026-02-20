@@ -13,8 +13,19 @@ import {
     Typography,
     Modal
 } from "@mui/material";
+import { useState } from "react";
 const TableContact = ({ userData, onDeleteContact, onEditContact, openDelete, handleCloseDelete, handleOpenDelete }) => {
+    
+    const [selectedContactId, setSelectedContactId] = useState(null);
+    const handleRequestDelete = (contactId) => {
+        setSelectedContactId(contactId);
+        handleOpenDelete();
+    };
 
+    const handleConfirmDelete = () => {
+        if(!selectedContactId) return;
+        onDeleteContact(selectedContactId);
+    };
     return (
         <Box sx={{ width: { xxl: '65%', xl: '70%', lg: '80%', md: '85%', sm: '90%', xs: '95%' }, alignSelf: "center", justifySelf: "center", px: { xs: 1.5, sm: 2, md: 4 }, pb: { xs: 4, sm: 6 } }}>
             <TableContainer
@@ -61,49 +72,15 @@ const TableContact = ({ userData, onDeleteContact, onEditContact, openDelete, ha
                                 >{contact.phonenumber ? contact.phonenumber : "—"}</TableCell>
                                 <TableCell  >
                                     <Stack direction={{ xs: "column", lg: "row" }} sx={{ maxWidth: "60%" }} spacing={1}>
-                                        <Button
+                                    <Button
                                             color="error"
                                             variant="contained"
-                                            onClick={handleOpenDelete}
+                                            onClick={() => handleRequestDelete(contact.Contact_id)}
                                             fullWidth
-                                            sx={{ width: "100%" }}
                                             size="small"
                                         >
                                             Delete
                                         </Button>
-                                        <Modal sx={{ display: "flex", justifyContent: "center", alignItems: "center" }} open={openDelete} onClose={handleCloseDelete} >
-                                            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", px: { xs: 1.5, sm: 2 }, pb: { xs: 3.5, sm: 6 } }}>
-                                                <Box sx={{ width: "100%", maxWidth: { xs: 620, md: 540 }, p: { xs: 0, sm: 1.2, md: 1.6 } }}>
-                                                    <Paper
-                                                        elevation={0}
-                                                        sx={{
-                                                            p: { xs: 2, sm: 2.8, md: 3.2 },
-                                                            borderRadius: { xs: 2.2, sm: 2.6 },
-                                                            border: 1,
-                                                            borderColor: "divider",
-                                                            boxShadow: "0 14px 28px rgba(15, 23, 42, 0.08)",
-                                                        }}
-                                                    >
-                                                        <Box
-                                                            sx={{ display: "flex", flexDirection: "column", gap: { xs: 1.4, sm: 1.8 } }}
-                                                        >
-                                                            <Box>
-                                                                <Typography variant="h6" sx={{ fontWeight: 700, color: "primary.dark" }}>
-                                                                </Typography>
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    Are you sure you want to delete this contact? This action cannot be undone.
-                                                                </Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.2 }}>
-                                                                <Button onClick={()=>{onDeleteContact(contact.Contact_id)}}>Ok</Button>
-                                                                <Button onClick={handleCloseDelete}>Cancel</Button>
-                                                            </Box>
-                                                        </Box>
-                                                    </Paper>
-                                                </Box>
-                                            </Box>
-                                        </Modal>
-
                                         <Button
                                             color="success"
                                             onClick={() => onEditContact(contact)}
@@ -133,7 +110,38 @@ const TableContact = ({ userData, onDeleteContact, onEditContact, openDelete, ha
 
                 </Table>
             </TableContainer>
+            <Modal
+                sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+                open={openDelete}
+                onClose={handleCloseDelete}
+            >
+                <Box sx={{ px: { xs: 1.5, sm: 2 }, pb: { xs: 3.5, sm: 6 } }}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: { xs: 2, sm: 2.8, md: 3.2 },
+                            borderRadius: { xs: 2.2, sm: 2.6 },
+                            border: 1,
+                            borderColor: "divider",
+                            boxShadow: "0 14px 28px rgba(15, 23, 42, 0.08)",
+                            maxWidth: 520
+                        }}
+                    >
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Are you sure you want to delete this contact? This action cannot be undone.
+                        </Typography>
 
+                        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.2 }}>
+                            <Button onClick={handleConfirmDelete}>
+                                Ok
+                            </Button>
+                            <Button onClick={handleCloseDelete}>
+                                Cancel
+                            </Button>
+                        </Box>
+                    </Paper>
+                </Box>
+            </Modal>
         </Box>
     );
 }

@@ -9,7 +9,7 @@ import {
     Stack,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AuthFormCard from "../Components/AuthFormCard";
+import AuthFormCard from "../components/AuthFormCard";
 
 function Signup() {
     const navigate = useNavigate();
@@ -18,7 +18,7 @@ function Signup() {
         name: "",
         email: "",
         password: "",
-        confirmpassword: "",
+        confirmPassword: "",
     });
     const [errors, setErrors] = useState({});
     const [notificationOpen, setNotificationOpen] = useState(false);
@@ -51,10 +51,10 @@ function Signup() {
         } else if (formData.password.length < 6) {
             newErrors.password = "Password must be at least 6 characters";
         }
-        if (!formData.confirmpassword) {
-            newErrors.confirmpassword = "Confirm Password is Required";
-        } else if (formData.password != formData.confirmpassword) {
-            newErrors.confirmpassword = "Check the password ";
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = "Confirm Password is Required";
+        } else if (formData.password != formData.confirmPassword) {
+            newErrors.confirmPassword = "Check the password ";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -129,12 +129,12 @@ function Signup() {
 
                     <TextField
                         label="Confirm Password"
-                        name="confirmpassword"
+                        name="confirmPassword"
                         type="password"
-                        value={formData.confirmpassword}
+                        value={formData.confirmPassword}
                         onChange={handleChange}
-                        error={!!errors.confirmpassword}
-                        helperText={errors.confirmpassword}
+                        error={!!errors.confirmPassword}
+                        helperText={errors.confirmPassword}
                         autoComplete="new-password"
                     />
 

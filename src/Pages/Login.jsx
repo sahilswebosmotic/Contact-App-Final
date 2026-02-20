@@ -10,7 +10,7 @@ import {
     Stack,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import AuthFormCard from "../Components/AuthFormCard";
+import AuthFormCard from "../components/AuthFormCard";
 
 function Login() {
     const navigate = useNavigate();
@@ -23,7 +23,7 @@ function Login() {
 
     const [errors, setErrors] = useState({});
     const [notification, setNotification] = useState({
-        open: !!location.state?.message,
+        open: location.state?.message,
         message: location.state?.message || "",
         severity: "success",
     });
@@ -66,7 +66,7 @@ function Login() {
             return;
         }
 
-        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const users =JSON.parse(localStorage.getItem("users")) || [];
 
         const emailUser = users.find(user => user.email === formData.email);
 
