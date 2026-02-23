@@ -1,16 +1,6 @@
-// export const getFromLocalStorage = (key) =>  JSON.parse(localStorage.getItem([key]))
 
-// export const getFromsessoinStorage = (key) => JSON.parse(sessionStorage.getItem([key]))
-
-// export const setFromLocalStorage = (key,value) =>  JSON.parse(localStorage.getItem([key],value))
-
-// export const setFromsessoinStorage = (key,value) => JSON.parse(sessionStorage.getItem([key],value))
 
 import { v4 as uuidv4 } from "uuid";
-// import { normalizeEmail,normalizePhone } from "/utils/normalization";
-
-
-
 
 export const getUsers = () => {
     try {

@@ -2,8 +2,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import PublicRoute from "./components/PublicRoutes";
-import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/routes/PublicRoutes";
+import ProtectedRoute from "./components/routes/ProtectedRoute";
+import { js } from '@eslint/js';
 function App() {
   return (
     <BrowserRouter>

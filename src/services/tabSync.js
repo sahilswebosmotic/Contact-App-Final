@@ -7,3 +7,4 @@ export const broadcastContactsUpdate = (tabId, User_id) => {
         timestamp: Date.now(),
     }));
 };
+

@@ -1,184 +1,65 @@
-import { useState } from "react";
-import {
-    Alert,
-    Snackbar,
-    TextField,
-    Button,
-    Typography,
-    Link,
-    Stack,
-} from "@mui/material";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { signupSchema } from "../components/validation/authSchemas";
 import { useNavigate } from "react-router-dom";
-import AuthFormCard from "../components/AuthFormCard";
+import SignupForm from "../components/forms/signupForm";
+import { v4 as uuidv4 } from "uuid";
 
 function Signup() {
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(signupSchema),
     });
-    const [errors, setErrors] = useState({});
-    const [notificationOpen, setNotificationOpen] = useState(false);
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-        if (errors[e.target.name]) {
-            setErrors({
-                ...errors,
-                [e.target.name]: "",
-            });
-        }
-    };
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.name.trim()) {
-            newErrors.name = "Name is required";
-        }
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = "Please enter a valid email address";
-        }
-        if (!formData.password) {
-            newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
-        }
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = "Confirm Password is Required";
-        } else if (formData.password != formData.confirmPassword) {
-            newErrors.confirmPassword = "Check the password ";
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+    const onSubmit = (data) => {
         const users = JSON.parse(localStorage.getItem("users")) || [];
-        const email = formData.email.trim().toLowerCase();
-        const userExists = users.find((user) => user.email.toLowerCase() === email);
+
+        const email = data.email.trim().toLowerCase();
+
+        const userExists = users.find(
+            (user) => user.email.toLowerCase() === email
+        );
+
         if (userExists) {
-            setErrors({ email: "Email already registered" });
+            setError("email", {
+                type: "manual",
+                message: "Email already registered",
+            });
             return;
         }
+
         const newUser = {
-            User_id: Date.now(),
-            name: formData.name.trim(),
-            email: email,
-            password: formData.password,
+            User_id: uuidv4(),
+            name: data.name.trim(),
+            email,
+            password: data.password,
             Contacts: [],
         };
+
         users.push(newUser);
         localStorage.setItem("users", JSON.stringify(users));
-        setNotificationOpen(true);
-        setTimeout(() => {
-            navigate("/");
-        }, 500);
+
+        navigate("/", {
+            state: { message: "Account created successfully. Please login." },
+        });
     };
 
+        const submitHandler = handleSubmit(onSubmit);
+
     return (
-        <>
-            <AuthFormCard title="Sign Up" subtitle="Create your account to continue">
-                <Stack
-                    component="form"
-                    noValidate
-                    onSubmit={handleSubmit}
-                    spacing={1.8}
-                    sx={{ width: "100%" }}
-                >
-                    <TextField
-                        label="Name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        error={!!errors.name}
-                        helperText={errors.name}
-                        autoComplete="name"
-                    />
-
-                    <TextField
-                        label="Email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        error={!!errors.email}
-                        helperText={errors.email}
-                        autoComplete="email"
-                    />
-
-                    <TextField
-                        label="Password"
-                        name="password"
-                        type="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        error={!!errors.password}
-                        helperText={errors.password}
-                        autoComplete="new-password"
-                    />
-
-                    <TextField
-                        label="Confirm Password"
-                        name="confirmPassword"
-                        type="password"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        error={!!errors.confirmPassword}
-                        helperText={errors.confirmPassword}
-                        autoComplete="new-password"
-                    />
-
-                    <Button
-                        variant="contained"
-                        type="submit"
-                        fullWidth
-                        size="large"
-                        sx={{ mt: 1, py: 1.2 }}
-                    >
-                        Sign Up
-                    </Button>
-
-                    <Typography variant="body2" textAlign="center" sx={{ mt: 1 }}>
-                        Already have an account?{" "}
-                        <Link
-                            component="button"
-                            variant="body2"
-                            type="button"
-                            onClick={() => navigate("/")}
-                            sx={{ cursor: "pointer", fontWeight: 600 }}
-                        >
-                            Login here
-                        </Link>
-                    </Typography>
-                </Stack>
-            </AuthFormCard>
-
-            <Snackbar
-                open={notificationOpen}
-                autoHideDuration={500}
-                onClose={() => setNotificationOpen(false)}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-                <Alert
-
-                    severity="success"
-                    variant="filled"
-                    sx={{ width: "100%" }}
-                >
-                    Account created successfully.
-                </Alert>
-            </Snackbar>
-        </>
+        <SignupForm
+            register={register}
+            errors={errors}
+            onSubmit={submitHandler}
+        />
     );
 }
 
