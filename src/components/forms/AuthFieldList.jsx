@@ -1,4 +1,4 @@
-import FormInput from "./formInput";
+import FormInput from "./FormInput";
 
 const AuthFieldList = ({ fields, register }) => {
     return fields.map((field) => (

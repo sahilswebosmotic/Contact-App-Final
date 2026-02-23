@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { createContactActions } from "./useContactsDashboard/createContactActions";
-import { useContactFormState } from "./useContactsDashboard/useContactFormState";
-import { useContactsDataState } from "./useContactsDashboard/useContactsDataState";
-import { useDashboardNotification } from "./useContactsDashboard/useDashboardNotification";
-import { useDashboardUiState } from "./useContactsDashboard/useDashboardUiState";
+import { createContactActions } from "./use-contacts-dashboard/createContactActions";
+import { useContactFormState } from "./use-contacts-dashboard/useContactFormState";
+import { useContactsDataState } from "./use-contacts-dashboard/useContactsDataState";
+import { useDashboardNotification } from "./use-contacts-dashboard/useDashboardNotification";
+import { useDashboardUiState } from "./use-contacts-dashboard/useDashboardUiState";
 
 export default function useContactsDashboard() {
     const navigate = useNavigate();
