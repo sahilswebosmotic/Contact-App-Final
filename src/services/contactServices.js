@@ -1,5 +1,5 @@
 
-import { getUsers, getCurrentUser, saveContactsToStorage } from "./storage";
+import { getUsers, getCurrentUser,  saveUserContacts } from "./storage";
 import { normalizeEmail, normalizePhone } from "../utils/normalization";
 import { v4 as uuidv4 } from "uuid";
 
@@ -66,7 +66,7 @@ export const saveContact = (data, isEditMode, existingData) => {
     }
 
     matchedUser.Contacts = updatedContacts;
-    saveContactsToStorage(users);
+    saveUserContacts(users);
 
     return { success: true };
 };

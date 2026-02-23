@@ -1,6 +1,7 @@
 // import { useEffect } from "react";
 import { Alert, Box, Snackbar } from "@mui/material";
-import AddContact from "../components/AddContact";
+// import AddContact from "../components/AddContact";
+import { ContactFormContainer } from "../components/forms/ContactFormContainer";
 import DashboardOverview from "../components/DashboardOverview";
 import DashboardTopBar from "../components/DashboardHeader";
 import ImportContact from "../components/ImportContact";
@@ -67,7 +68,7 @@ function Dashboard() {
                 userName={userName}
             />
 
-            <AddContact
+            <ContactFormContainer
                 onAddContact={handleAddContact}
                 formData={formData}
                 openForm={openForm}

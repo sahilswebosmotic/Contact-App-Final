@@ -2,9 +2,9 @@ import { contactSchema } from "@components/validation/authSchemas";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import AddContact from "./AddContact";
-import { saveContact } from "";
-import { showSuccess } from "@utils/notifications";
+import AddContact from "../AddContact";
+import { saveContact } from "../../services/contactServices";
+// import { showSuccess } from "@utils/notifications";
 
 export const ContactFormContainer = ({
     openForm,
@@ -74,23 +74,25 @@ export const ContactFormContainer = ({
             return;
         }
 
-        showSuccess(
-            isEditMode
-                ? "Contact updated successfully."
-                : "Contact added successfully."
-        );
+        // showSuccess(
+        //     isEditMode
+        //         ? "Contact updated successfully."
+        //         : "Contact added successfully."
+        // );
 
         reset();
         setPreviewUrl(null);
         handleClose();
     };
 
+    const submitHandler = handleSubmit(onSubmit);
+
     return (
         <AddContact
             openForm={openForm}
             handleCloseForm={handleClose}
             register={register}
-            handleSubmit={handleSubmit}
+            handleSubmit={submitHandler}
             errors={errors}
             onSubmit={onSubmit}
             previewUrl={previewUrl}

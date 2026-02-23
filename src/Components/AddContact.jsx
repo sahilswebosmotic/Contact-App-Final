@@ -58,7 +58,7 @@ const AddContact = ({
                         <Box
                             component="form"
                             noValidate
-                            onSubmit={handleSubmit(onSubmit)}
+                            onSubmit={onSubmit}
                             sx={{
                                 display: "flex",
                                 flexDirection: "column",
