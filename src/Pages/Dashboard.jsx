@@ -1,33 +1,27 @@
-// import { useEffect } from "react";
 import { Alert, Box, Snackbar } from "@mui/material";
-// import AddContact from "../components/AddContact";
-import { ContactFormContainer}  from "../components/forms/ContactFormContainer";
+import AddContact from "../components/AddContact";
 import DashboardOverview from "../components/DashboardOverview";
 import DashboardTopBar from "../components/DashboardHeader";
 import ImportContact from "../components/ImportContact";
 import TableContact from "../components/TableContact";
-import  useContactsDashboard from "../hooks/useContactsDashboard";
-
-
-
+import useContactsDashboard from "../hooks/useContactsDashboard";
 
 function Dashboard() {
-
     const {
         userName,
         openForm,
         userData,
         importOpen,
-        // formData,
-        // errors,
-        // previewUrl,
-        // fileInputRef,
+        formData,
+        errors,
+        previewUrl,
+        fileInputRef,
         notification,
         isEditMode,
         openLogout,
         openDelete,
         handleOpenDelete,
-        handleCloseDelete ,
+        handleCloseDelete,
         handleOpenLogout,
         handleCloseLogout,
         handleCloseForm,
@@ -37,17 +31,15 @@ function Dashboard() {
         handleOpenImport,
         handleCloseImport,
         handleImportContacts,
-        // handleAddContact,
-        // handleChange,
-        // handleFileChange,
-        // handleRemoveImage,
-        // handleSubmit,
+        handleChange,
+        handleFileChange,
+        handleRemoveImage,
+        handleSubmit,
         handleDeleteContact,
         handleEditContact,
-        // handleCancelEdit,
+        handleCancelEdit,
         handleExportContacts,
     } = useContactsDashboard();
-
 
     return (
         <Box sx={{ minHeight: "100vh", bgcolor: "grey.100" }}>
@@ -55,12 +47,11 @@ function Dashboard() {
                 userData={userData}
                 onImportOpen={handleOpenImport}
                 onLogout={handleLogout}
-                handleExportContacts = {handleExportContacts}
+                handleExportContacts={handleExportContacts}
                 openLogout={openLogout}
                 handleCloseLogout={handleCloseLogout}
                 handleOpenLogout={handleOpenLogout}
             />
-
 
             <DashboardOverview
                 totalContacts={userData.length}
@@ -68,8 +59,7 @@ function Dashboard() {
                 userName={userName}
             />
 
-            {/* <ContactFormContainer
-                onAddContact={handleAddContact}
+            <AddContact
                 formData={formData}
                 openForm={openForm}
                 handleCloseForm={handleCloseForm}
@@ -82,13 +72,6 @@ function Dashboard() {
                 onSubmit={handleSubmit}
                 isEditMode={isEditMode}
                 onCancelEdit={handleCancelEdit}
-            /> */}
-
-            <ContactFormContainer
-                openForm={openForm}
-                handleClose={handleCloseForm}
-                isEditMode={isEditMode}
-                existingData={userData}
             />
 
             <TableContact
@@ -99,7 +82,6 @@ function Dashboard() {
                 handleCloseDelete={handleCloseDelete}
                 handleOpenDelete={handleOpenDelete}
             />
-
 
             <ImportContact
                 open={importOpen}
@@ -125,8 +107,4 @@ function Dashboard() {
     );
 }
 
-
 export default Dashboard;
-
-
-

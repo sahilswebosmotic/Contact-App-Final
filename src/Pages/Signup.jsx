@@ -1,46 +1,46 @@
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { signupSchema } from "../components/validation/authSchemas";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SignupForm from "../components/forms/signupForm";
+import SignupForm from "../components/forms/SignupForm";
 import { v4 as uuidv4 } from "uuid";
 
 function Signup() {
     const navigate = useNavigate();
+    const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("error");
 
-    const {
-        register,
-        handleSubmit,
-        setError,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(signupSchema),
-    });
-
-
+    const { register, handleSubmit } = useForm();
 
     const onSubmit = (data) => {
-        const users = JSON.parse(localStorage.getItem("users")) || [];
+        setMessage("");
+        const name = data.name?.trim();
+        const email = data.email?.trim().toLowerCase();
+        const password = data.password?.trim();
+        const confirmPassword = data.confirmPassword?.trim();
 
-        const email = data.email.trim().toLowerCase();
+        if (!name || !email || !password || !confirmPassword || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 6 || password !== confirmPassword ) {
+            setMessage("Please enter valid credentials.");
+            setMessageType("error");
+            return;
+        }
+
+        const users = JSON.parse(localStorage.getItem("users")) || [];
 
         const userExists = users.find(
             (user) => user.email.toLowerCase() === email
         );
 
         if (userExists) {
-            setError("email", {
-                type: "manual",
-                message: "Email already registered",
-            });
+            setMessage("Email already registered.");
+            setMessageType("error");
             return;
         }
 
         const newUser = {
             User_id: uuidv4(),
-            name: data.name.trim(),
+            name,
             email,
-            password: data.password,
+            password,
             Contacts: [],
         };
 
@@ -52,13 +52,14 @@ function Signup() {
         });
     };
 
-        const submitHandler = handleSubmit(onSubmit);
+    const submitHandler = handleSubmit(onSubmit);
 
     return (
         <SignupForm
             register={register}
-            errors={errors}
             onSubmit={submitHandler}
+            message={message}
+            messageType={messageType}
         />
     );
 }

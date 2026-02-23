@@ -1,21 +1,6 @@
 import { Navigate } from "react-router-dom";
 
-const getCurrentUser = () => {
-  try {
-    return JSON.parse(sessionStorage.getItem("currentUser"));
-  } catch {
-    return null;
-  }
-};
-
-const getUsers = () => {
-  try {
-    return JSON.parse(localStorage.getItem("users")) || [];
-  } catch {
-    return [];
-  }
-};
-
+import { getCurrentUser, getUsers } from "../../services/storage";
 
 export default function ProtectedRoute({ children }) {
   const currentUser = getCurrentUser();

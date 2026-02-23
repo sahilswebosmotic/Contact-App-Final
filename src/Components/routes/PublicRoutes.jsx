@@ -1,12 +1,5 @@
 import { Navigate } from "react-router-dom";
-
-const getCurrentUser = () => {
-    try {
-        return JSON.parse(sessionStorage.getItem("currentUser"));
-    } catch {
-        return null;
-    }
-};
+import { getCurrentUser } from "../../services/storage";
 
 export default function PublicRoute({ children }) {
     const currentUser = getCurrentUser();

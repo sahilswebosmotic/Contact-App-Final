@@ -4,7 +4,6 @@ export default function FormInput({
     label,
     name,
     register,
-    errors,
     type = "text",
 }) {
     return (
@@ -12,8 +11,6 @@ export default function FormInput({
             label={label}
             type={type}
             {...register(name)}
-            error={!!errors[name]}  
-            helperText={errors[name]?.message}
             fullWidth
             margin="normal"
         />

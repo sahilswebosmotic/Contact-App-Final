@@ -4,7 +4,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import PublicRoute from "./components/routes/PublicRoutes";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
-import { js } from '@eslint/js';
 function App() {
   return (
     <BrowserRouter>

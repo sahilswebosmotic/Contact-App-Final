@@ -29,17 +29,3 @@ export const loginSchema = yup.object({
         .string()
         .required("Password is required"),
 });
-
-export const contactSchema = yup.object().shape({
-    name: yup.string().required("Name is required"),
-
-    email: yup
-        .string()
-        .email("Invalid email")
-        .required("Email is required"),
-
-    phonenumber: yup
-        .string()
-        .required("Phone number is required")
-        .matches(/^[0-9]{10}$/, "Must be 10 digits"),
-});
