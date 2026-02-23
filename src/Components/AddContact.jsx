@@ -2,7 +2,6 @@ import {
     Button,
     Box,
     Paper,
-    TextField,
     IconButton,
     Avatar,
     Typography,
@@ -12,38 +11,18 @@ import {
 import FormInput from "./forms/formInput";
 
 const AddContact = ({
-    formData,
     openForm,
     handleCloseForm,
     errors,
+    register,       
+    handleSubmit,
     previewUrl,
-    fileInputRef,
-    onChange,
-    onAddContact,
     onFileChange,
     onRemoveImage,
     onSubmit,
     isEditMode,
     onCancelEdit,
 }) => {
-    const onFileChange = (event) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        setValue("profilImage", file, { shouldValidate: true });
-
-        const preview = URL.createObjectURL(file);
-        setPreviewUrl(preview);
-    };
-    const onSubmit = (data) => {
-        console.log("Form Data:", data);
-
-        // data.profilImage is a File object
-        // Save contact logic here
-
-        reset();
-        setPreviewUrl(null);
-    };
     return (
         <Modal
             sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
@@ -79,7 +58,7 @@ const AddContact = ({
                         <Box
                             component="form"
                             noValidate
-                            onSubmit={onSubmit}
+                            onSubmit={handleSubmit(onSubmit)}
                             sx={{
                                 display: "flex",
                                 flexDirection: "column",
@@ -138,7 +117,6 @@ const AddContact = ({
                             </Button>
                         )}
 
-                        {/* Name */}
                         <FormInput
                             label="Name"
                             name="name"
@@ -146,7 +124,6 @@ const AddContact = ({
                             errors={errors}
                         />
 
-                        {/* Email */}
                         <FormInput
                             label="Email"
                             name="email"
@@ -155,7 +132,6 @@ const AddContact = ({
                             errors={errors}
                         />
 
-                        {/* Phone */}
                         <FormInput
                             label="Phone Number"
                             name="phonenumber"
@@ -169,7 +145,7 @@ const AddContact = ({
                                     variant="contained"
                                     color="primary"
                                     type="submit"
-                                    onClick={onAddContact}
+                                    onClick={handleSubmit(onSubmit)}
                                     fullWidth
                                 >
                                     {isEditMode ? "Save" : "Add Contact"}

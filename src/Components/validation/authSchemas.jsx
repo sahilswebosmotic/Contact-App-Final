@@ -42,8 +42,4 @@ export const contactSchema = yup.object().shape({
         .string()
         .required("Phone number is required")
         .matches(/^[0-9]{10}$/, "Must be 10 digits"),
-
-    // profilImage: yup
-    //     .mixed()
-    //     .required("Profile image is required")
 });
