@@ -1,4 +1,4 @@
-import { Alert, Box, Snackbar } from "@mui/material";
+import { Box } from "@mui/material";
 import AddContact from "../components/AddContact";
 import DashboardOverview from "../components/DashboardOverview";
 import DashboardTopBar from "../components/DashboardHeader";
@@ -16,7 +16,6 @@ function Dashboard() {
         errors,
         previewUrl,
         fileInputRef,
-        notification,
         isEditMode,
         openLogout,
         openDelete,
@@ -26,7 +25,6 @@ function Dashboard() {
         handleCloseLogout,
         handleCloseForm,
         handleOpenForm,
-        handleCloseNotification,
         handleLogout,
         handleOpenImport,
         handleCloseImport,
@@ -88,21 +86,6 @@ function Dashboard() {
                 onClose={handleCloseImport}
                 onImport={handleImportContacts}
             />
-
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={1500}
-                onClose={handleCloseNotification}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-                <Alert
-                    severity={notification.severity}
-                    variant="filled"
-                    sx={{ width: "100%" }}
-                >
-                    {notification.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

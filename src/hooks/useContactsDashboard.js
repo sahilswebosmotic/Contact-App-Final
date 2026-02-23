@@ -8,10 +8,8 @@ import { useDashboardUiState } from "./use-contacts-dashboard/useDashboardUiStat
 export default function useContactsDashboard() {
     const navigate = useNavigate();
     const {
-        notification,
         showSuccess,
         showError,
-        handleCloseNotification,
     } = useDashboardNotification();
 
     const {
@@ -92,7 +90,6 @@ export default function useContactsDashboard() {
         errors,
         previewUrl,
         fileInputRef,
-        notification,
         isEditMode: editingContactId !== null,
         openLogout,
         handleOpenLogout,
@@ -102,7 +99,6 @@ export default function useContactsDashboard() {
         handleCloseDelete,
         handleOpenForm,
         handleCloseForm: handleCancelEdit,
-        handleCloseNotification,
         handleLogout,
         handleOpenImport,
         handleCloseImport,

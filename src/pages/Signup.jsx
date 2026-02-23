@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SignupForm from "../components/forms/SignupForm";
 import { v4 as uuidv4 } from "uuid";
+import { useToast }  from "../hooks/useToast";
 
 function Signup() {
     const navigate = useNavigate();
+    const { showSuccess } = useToast();
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("error");
 
@@ -47,9 +49,8 @@ function Signup() {
         users.push(newUser);
         localStorage.setItem("users", JSON.stringify(users));
 
-        navigate("/", {
-            state: { message: "Account created successfully. Please login." },
-        });
+        showSuccess("Signup successful. Please login.");
+        navigate("/");
     };
 
     const submitHandler = handleSubmit(onSubmit);

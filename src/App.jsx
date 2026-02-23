@@ -6,6 +6,7 @@ import PublicRoute from "./components/routes/PublicRoute";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 function App() {
   return (
+    
     <BrowserRouter>
       <Routes>
 

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/forms/LoginForm";
+import  {useToast} from "../hooks/useToast";
 
 function Login() {
     const navigate = useNavigate();
-    const location = useLocation();
+    const { showSuccess } = useToast();
     const [errorMessage, setErrorMessage] = useState("");
     const { register, handleSubmit } = useForm();
 
@@ -33,17 +34,16 @@ function Login() {
             JSON.stringify({ User_id: emailUser.User_id }),
         );
 
-        navigate("/dashboard", {
-            state: { message: `Welcome back, ${emailUser.name}!` },
-        });
+        showSuccess(`Welcome back, ${emailUser.name}!`);
+        navigate("/dashboard");
     };
 
     return (
         <LoginForm
             register={register}
             onSubmit={handleSubmit(onSubmit)}
-            message={errorMessage || location.state?.message}
-            messageType={errorMessage ? "error" : "success"}
+            message={errorMessage}
+            messageType="error"
         />
     );
 }
