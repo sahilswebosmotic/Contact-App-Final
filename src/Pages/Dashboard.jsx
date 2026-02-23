@@ -1,7 +1,7 @@
 // import { useEffect } from "react";
 import { Alert, Box, Snackbar } from "@mui/material";
 // import AddContact from "../components/AddContact";
-import { ContactFormContainer } from "../components/forms/ContactFormContainer";
+import { ContactFormContainer}  from "../components/forms/ContactFormContainer";
 import DashboardOverview from "../components/DashboardOverview";
 import DashboardTopBar from "../components/DashboardHeader";
 import ImportContact from "../components/ImportContact";
@@ -18,10 +18,10 @@ function Dashboard() {
         openForm,
         userData,
         importOpen,
-        formData,
-        errors,
-        previewUrl,
-        fileInputRef,
+        // formData,
+        // errors,
+        // previewUrl,
+        // fileInputRef,
         notification,
         isEditMode,
         openLogout,
@@ -37,14 +37,14 @@ function Dashboard() {
         handleOpenImport,
         handleCloseImport,
         handleImportContacts,
-        handleAddContact,
-        handleChange,
-        handleFileChange,
-        handleRemoveImage,
-        handleSubmit,
+        // handleAddContact,
+        // handleChange,
+        // handleFileChange,
+        // handleRemoveImage,
+        // handleSubmit,
         handleDeleteContact,
         handleEditContact,
-        handleCancelEdit,
+        // handleCancelEdit,
         handleExportContacts,
     } = useContactsDashboard();
 
@@ -68,7 +68,7 @@ function Dashboard() {
                 userName={userName}
             />
 
-            <ContactFormContainer
+            {/* <ContactFormContainer
                 onAddContact={handleAddContact}
                 formData={formData}
                 openForm={openForm}
@@ -82,6 +82,13 @@ function Dashboard() {
                 onSubmit={handleSubmit}
                 isEditMode={isEditMode}
                 onCancelEdit={handleCancelEdit}
+            /> */}
+
+            <ContactFormContainer
+                openForm={openForm}
+                handleClose={handleCloseForm}
+                isEditMode={isEditMode}
+                existingData={userData}
             />
 
             <TableContact
